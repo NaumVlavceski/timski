@@ -2,38 +2,114 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>JSON пример</title>
+    <title>{{ quiz.title }}</title>
+ <link rel="stylesheet" href="/static/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
 </head>
 <body>
-<h1>{{ quiz.title }}</h1>
-<p>{{ quiz.age_range }}</p>
 
-{% for section in quiz.sections %}
-    <h2>{{ section.name }}</h2>
+<div class="container mt-4">
 
-    {% for q in section.questions %}
-        <div style="margin-bottom: 12px;">
-            <label><b>{{ q.text }}</b></label><br>
-
-            {% for opt in q.options %}
-                <input type="radio" name="{{ q.id }}" value="{{ opt }}">
-                {{ opt }}
-            {% endfor %}
+    <div class="row mb-3 align-items-center">
+        <div class="col-8">
+            <h1 class="mb-0">{{ quiz.title }}</h1>
         </div>
-    {% endfor %}
-{% endfor %}
-
-<h2>Завршни прашања</h2>
-
-{% for q in quiz.final_questions %}
-    <div>
-        <p><b>{{ q.text }}</b></p>
-        <input type="text">
-        {% for opt in q.options %}
-
-            <input type="radio" name="{{ q.id }}" value="{{ opt }}"> {{ opt }}
-        {% endfor %}
+        <div class="col-4 text-end small">
+            <p class="mb-0">{{ quiz.age_range }}</p>
+        </div>
     </div>
-{% endfor %}
-</body>
+
+    <div class="p-3 mb-4" style="background-color: #f0f0f0;">
+        <p class="mb-0">
+            На следниве страници се дадени активности кои вашето бебе можеби ги прави.
+            Вашето бебе некои од активностите можеби веќе ги извршува, а други можеби сè уште не започнало да ги прави.
+            За секое барање ве молиме пополнете во соодветното квадранче во зависност од тоа дали бебето
+            активноста ја изведува редовно, понекогаш или сè уште не.
+        </p>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-6">
+            <p class="fw-bold">Важни насоки што треба да се запомнат:</p>
+            <ul>
+                <li>Секоја активност пробајте ја со вашето бебе пред да одговорите</li>
+                <li>Направете овој прашалник да биде забавен за вас и вашето бебе, како да е игра</li>
+                <li>Бидете сигурни дека бебето е најадено и наспано</li>
+                <li>Ве молиме вратете го прашалникот најдоцна до <span style="border-bottom: 1px solid black; padding: 0 50px;"></span></li>
+            </ul>
+        </div>
+        <div class="col-6">
+            <p class="fw-bold">Забелешки:</p>
+            <div style="border-bottom: 1px solid black; margin-bottom: 10px;"></div>
+            <br>
+            <div style="border-bottom: 1px solid black; margin-bottom: 10px;"></div>
+            <br>
+            <div style="border-bottom: 1px solid black; margin-bottom: 10px;"></div>
+            <br>
+            <div style="border-bottom: 1px solid black; margin-bottom: 10px;"></div>
+
+        </div>
+    </div>
+
+    <div class="container mt-4">
+
+    <form method="POST">
+        {% csrf_token %}
+
+        {% for section in quiz.sections %}
+            <h2>{{ section.name }}</h2>
+
+            <table class="question-table">
+                <tr>
+                    <th class="col-question"></th>
+                    <th class="col-header">ДА</th>
+                    <th class="col-header">ПОНЕКОГАШ</th>
+                    <th class="col-header">СЕ УШТЕ НЕ</th>
+                    <th class="col-header">Поени</th>
+                </tr>
+
+                {% for q in section.questions %}
+                    <tr>
+                        <td class="question-text">
+                            {{ forloop.counter }}. {{ q.text }}
+
+                            {% if q.commands %}
+                                <div class="mt-2 p-3 border rounded bg-light-subtle">
+                                    <ul class="list-unstyled ms-4 mb-0 small">
+                                    {% for command in q.commands %}
+                                        <li class="d-flex align-items-center mb-1">
+                                            <input type="checkbox" name="{{ q.id }}_command" value="{{ command.command }}" class="me-2 form-check-input">
+                                            <label class="mb-0">{{ command.command }}</label>
+                                        </li>
+                                    {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+
+                            {% if q.example_combinations %}
+                                <div class="mt-2">
+                                    <textarea name="{{ q.id }}_examples" class="form-control" rows="3"
+                                        placeholder="{{ q.example_combinations }}"></textarea>
+                                </div>
+                            {% endif %}
+                        </td>
+                        {% for opt in q.options %}
+                            <td class="radio-cell">
+                                <input type="radio" name="{{ q.id }}" value="{{ opt }}" required>
+                            </td>
+                        {% endfor %}
+
+                        <td class="points-cell">___</td>
+                    </tr>
+                {% endfor %}
+            </table>
+
+            <div class="section-total text-end fw-bold fs-4" >
+                <br>
+                {{ section.name }} ВКУПНО: _____
+            </div>
+        {% endfor %}
+
+        </form>
+</div>
 </html>
