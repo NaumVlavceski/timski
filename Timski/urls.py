@@ -18,9 +18,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from timski_proekt.views import index
+from timski_proekt.views import index, prasalnici
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
     path("",index),
+    path("prasalnici/<int:mesec>/",prasalnici,name="prasalnici"),
 ]
