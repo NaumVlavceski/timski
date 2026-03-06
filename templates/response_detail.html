@@ -316,27 +316,42 @@
                                                             {% endif %}
                                                         </td>
                                                         <td>
-                                                            <!-- ВОКА ГИ ПОДГОТВИМЕ ПОДАТОЦИТЕ ВО VIEW -->
+                                                            <!-- ПРВО: Прикажи го главниот одговор (ДА/ПОНЕКОГАШ/НЕ) -->
                                                             {% for answer_key, answer_value in answers.items %}
                                                                 {% if answer_key == q.id %}
                                                                     <span class="badge
-                                                    {% if answer_value == 'ДА' %}bg-success
-                                                    {% elif answer_value == 'ПОНЕКОГАШ' %}bg-warning
-                                                    {% elif answer_value == 'СЕ УШТЕ НЕ' %}bg-secondary
+                                                    {% if answer_value.answer == 'ДА' %}bg-success
+                                                    {% elif answer_value.answer == 'ПОНЕКОГАШ' %}bg-warning
+                                                    {% elif answer_value.answer == 'СЕ УШТЕ НЕ' %}bg-secondary
                                                     {% else %}bg-light text-dark{% endif %}">
-                                                    {{ answer_value|default:"Нема одговор" }}
+                                                    {{ answer_value.answer }}
                                                 </span>
+                                                                {% endif %}
+                                                            {% endfor %}
 
-                                                                    {% if answer_value is not string and answer_value.commands %}
-                                                                        <div class="mt-2">
-                                                                            <small>Избрани команди:</small>
-                                                                            <ul class="mb-0">
-                                                                                {% for cmd in answer_value.commands %}
-                                                                                    <li>{{ cmd }}</li>
-                                                                                {% endfor %}
-                                                                            </ul>
+                                                            <!-- ВТОРО: Прикажи го _examples текстот ако постои -->
+                                                            {% with examples_key=q.id|stringformat:"s"|add:"_examples" %}
+                                                                {% for answer_key, answer_value in answers.items %}
+                                                                    {% if answer_key == examples_key %}
+                                                                        <div class="mt-2 p-2 bg-light rounded">
+                                                                            <small class="text-muted fw-bold">Примери/Објаснување:</small>
+                                                                            <p class="mb-0 small">{{ answer_value.answer }}</p>
                                                                         </div>
                                                                     {% endif %}
+                                                                {% endfor %}
+                                                            {% endwith %}
+
+                                                            <!-- ТРЕТО: Прикажи команди ако постојат (за прашања со checkboxes) -->
+                                                            {% for answer_key, answer_value in answers.items %}
+                                                                {% if answer_key == q.id and answer_value is not string and answer_value.commands %}
+                                                                    <div class="mt-2">
+                                                                        <small>Избрани команди:</small>
+                                                                        <ul class="mb-0">
+                                                                            {% for cmd in answer_value.commands %}
+                                                                                <li>{{ cmd }}</li>
+                                                                            {% endfor %}
+                                                                        </ul>
+                                                                    </div>
                                                                 {% endif %}
                                                             {% endfor %}
                                                         </td>
@@ -384,30 +399,22 @@
                                                             {{ forloop.counter }}. {{ q.text }}
                                                         </h6>
                                                         <!-- КОРИСТИ SIMPLE ДИРЕКТЕН ПРИСТАП -->
-                                                        {% for key, value in answers.items %}
-                                                            {% if key == q.id %}
-                                                                {% if value is string %}
-                                                                    <!-- Ако е стринг -->
-                                                                    <div class="mb-3">
-                                                                        <strong>Одговор:</strong>
-                                                                        <span class="badge bg-info ms-2">
-                                                                {{ value }}
-                                                            </span>
+                                                        {% for answer_key, answer_value in answers.items %}
+                                                            {% if answer_key == q.id %}
+                                                                <p><em>Одговор:</em>
+                                                                    <span class="badge
+                                            {% if answer_value.answer == 'ДА' %}bg-success
+                                            {% elif answer_value.answer == 'НЕ' %}bg-danger
+                                            {% else %}bg-info{% endif %}">
+                                            {{ answer_value.answer }}
+                                        </span>
+
+                                                                </p>
+                                                                {% if answer_value.text %}
+                                                                    <div class="p-2 bg-light rounded">
+                                                                        <small class="text-muted fw-bold">Објаснување:</small>
+                                                                        <p>{{ answer_value.text }}</p>
                                                                     </div>
-                                                                {% elif value.value %}
-                                                                    <!-- Ако е речник -->
-                                                                    <div class="mb-3">
-                                                                        <strong>Одговор:</strong>
-                                                                        <span class="badge bg-info ms-2">
-                                                                {{ value.value }}
-                                                            </span>
-                                                                    </div>
-                                                                    {% if value.text %}
-                                                                        <div class="p-3 bg-light rounded mb-3">
-                                                                            <strong>Објаснување:</strong>
-                                                                            <p class="mb-0">{{ value.text }}</p>
-                                                                        </div>
-                                                                    {% endif %}
                                                                 {% endif %}
                                                             {% endif %}
                                                         {% endfor %}
@@ -447,10 +454,11 @@
                                     <i class="bi bi-printer me-1"></i>
                                     Печати
                                 </button>
-                                <button class="btn btn-outline-primary ms-2" onclick="exportToPDF()">
+                                <a href="{% url 'export_response_pdf' response.id %}"
+                                   class="btn btn-outline-primary ms-2">
                                     <i class="bi bi-download me-1"></i>
-                                    Експортирај
-                                </button>
+                                    Експортирај PDF
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -480,6 +488,7 @@
             border-radius: 10px;
             overflow: hidden;
         }
+
         .accordion-button {
             font-weight: 600;
         }

@@ -313,7 +313,7 @@
         <!-- Систем -->
         <div class="tab-pane fade" id="system" role="tabpanel">
             <div class="row">
-                <div class="col-md-6 mb-4">
+                <div class="">
                     <div class="card h-100">
                         <div class="card-header bg-light">
                             <h5 class="mb-0">
@@ -344,83 +344,8 @@
                     </div>
                 </div>
 
-                <div class="col-md-6 mb-4">
-                    <div class="card h-100">
-                        <div class="card-header bg-light">
-                            <h5 class="mb-0">
-                                <i class="bi bi-gear me-2"></i>
-                                Системски нагодувања
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <form id="systemSettingsForm">
-                                <div class="mb-3">
-                                    <label class="form-label">Автоматско рефреш на прегледи (секунди)</label>
-                                    <input type="number" class="form-control" value="30" min="10" max="300">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Максимални поени по прашалник</label>
-                                    <input type="number" class="form-control" value="120" min="10" max="500">
-                                </div>
-                                <div class="mb-3 form-check">
-                                    <input type="checkbox" class="form-check-input" id="emailNotifications" checked>
-                                    <label class="form-check-label" for="emailNotifications">
-                                        Имајл известувања
-                                    </label>
-                                </div>
-                                <div class="mb-3 form-check">
-                                    <input type="checkbox" class="form-check-input" id="autoBackup" checked>
-                                    <label class="form-check-label" for="autoBackup">
-                                        Автоматско бекапирање
-                                    </label>
-                                </div>
-                                <button type="button" class="btn btn-primary w-100">
-                                    <i class="bi bi-save me-1"></i>
-                                    Зачувај нагодувања
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header bg-light">
-                            <h5 class="mb-0">
-                                <i class="bi bi-tools me-2"></i>
-                                Административни акции
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-3">
-                                <div class="col-md-3">
-                                    <button class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#backupModal">
-                                        <i class="bi bi-download me-1"></i>
-                                        Бекап на податоци
-                                    </button>
-                                </div>
-                                <div class="col-md-3">
-                                    <button class="btn btn-outline-success w-100" onclick="runSystemCheck()">
-                                        <i class="bi bi-check-circle me-1"></i>
-                                        Проверка на системот
-                                    </button>
-                                </div>
-                                <div class="col-md-3">
-                                    <button class="btn btn-outline-warning w-100" data-bs-toggle="modal" data-bs-target="#maintenanceModal">
-                                        <i class="bi bi-wrench me-1"></i>
-                                        Одржување
-                                    </button>
-                                </div>
-                                <div class="col-md-3">
-                                    <button class="btn btn-outline-danger w-100" onclick="clearCache()">
-                                        <i class="bi bi-trash me-1"></i>
-                                        Исчисти кеш
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
             </div>
         </div>
     </div>

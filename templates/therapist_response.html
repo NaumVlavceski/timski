@@ -2,43 +2,43 @@
 {% comment %} {% load custom_filters %} {% endcomment %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>Преглед на одговор</h2>
+    <div class="container mt-4">
+        <h2>Преглед на одговор</h2>
 
-    <div class="card mb-4">
-        <div class="card-header">
-            Информации за одговорот
+        <div class="card mb-4">
+            <div class="card-header">
+                Информации за одговорот
+            </div>
+            <div class="card-body">
+                <p><strong>Родител:</strong> {{ response.parent.get_full_name|default:response.parent.username }}</p>
+                <p><strong>Дете:</strong> {{ response.child.first_name }} {{ response.child.last_name }}</p>
+                <p><strong>Возраст:</strong> {{ response.child.get_age_in_months }} месеци</p>
+                <p><strong>Прашалник:</strong> {{ response.questionnaire.title }}</p>
+                <p><strong>Датум на поднесување:</strong> {{ response.created_at|date:"d.m.Y H:i" }}</p>
+                {% if response.notes %}
+                    <p><strong>Забелешки од родителот:</strong> {{ response.notes }}</p>
+                {% endif %}
+            </div>
         </div>
-        <div class="card-body">
-            <p><strong>Родител:</strong> {{ response.parent.get_full_name|default:response.parent.username }}</p>
-            <p><strong>Дете:</strong> {{ response.child.first_name }} {{ response.child.last_name }}</p>
-            <p><strong>Возраст:</strong> {{ response.child.get_age_in_months }} месеци</p>
-            <p><strong>Прашалник:</strong> {{ response.questionnaire.title }}</p>
-            <p><strong>Датум на поднесување:</strong> {{ response.created_at|date:"d.m.Y H:i" }}</p>
-            {% if response.notes %}
-                <p><strong>Забелешки од родителот:</strong> {{ response.notes }}</p>
-            {% endif %}
-        </div>
-    </div>
 
-    <form method="POST">
-        {% csrf_token %}
+        <form method="POST">
+            {% csrf_token %}
 
-        {% for section in quiz.sections %}
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h3>{{ section.name }}</h3>
-                </div>
-                <div class="card-body">
-                    <table class="table table-bordered">
-                        <thead>
+            {% for section in quiz.sections %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3>{{ section.name }}</h3>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered">
+                            <thead>
                             <tr>
                                 <th width="50%">Прашање</th>
                                 <th>Одговор на родителот</th>
                                 <th>Поени</th>
                             </tr>
-                        </thead>
-                        <tbody>
+                            </thead>
+                            <tbody>
                             {% for q in section.questions %}
                                 <tr>
                                     <td>
@@ -59,11 +59,11 @@
                                         {% for answer_key, answer_value in answers.items %}
                                             {% if answer_key == q.id %}
                                                 <span class="badge
-                                                    {% if answer_value == 'ДА' %}bg-success
-                                                    {% elif answer_value == 'ПОНЕКОГАШ' %}bg-warning
-                                                    {% elif answer_value == 'СЕ УШТЕ НЕ' %}bg-secondary
+                                                    {% if answer_value.answer == 'ДА' %}bg-success
+                                                    {% elif answer_value.answer == 'ПОНЕКОГАШ' %}bg-warning
+                                                    {% elif answer_value.answer == 'СЕ УШТЕ НЕ' %}bg-secondary
                                                     {% else %}bg-light text-dark{% endif %}">
-                                                    {{ answer_value }}
+                                                    {{ answer_value.answer }}
                                                 </span>
                                             {% endif %}
                                         {% endfor %}
@@ -74,7 +74,7 @@
                                                 {% if answer_key == examples_key %}
                                                     <div class="mt-2 p-2 bg-light rounded">
                                                         <small class="text-muted fw-bold">Примери/Објаснување:</small>
-                                                        <p class="mb-0 small">{{ answer_value }}</p>
+                                                        <p class="mb-0 small">{{ answer_value.answer }}</p>
                                                     </div>
                                                 {% endif %}
                                             {% endfor %}
@@ -118,113 +118,120 @@
                                     </td>
                                 </tr>
                             {% endfor %}
-                        </tbody>
-                    </table>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
-        {% endfor %}
+            {% endfor %}
 
-        {% if quiz.final_questions %}
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h3>Завршни прашања</h3>
-                </div>
-                <div class="card-body">
-                    {% for q in quiz.final_questions %}
-                        <div class="mb-3">
-                            <p><strong>{{ forloop.counter }}. {{ q.text }}</strong></p>
+            {% if quiz.final_questions %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3>Завршни прашања</h3>
+                    </div>
+                    <div class="card-body">
+                        {% for q in quiz.final_questions %}
+                            <div class="mb-3">
+                                <p><strong>{{ forloop.counter }}. {{ q.text }}</strong></p>
 
-                            <!-- Прикажи го одговорот за завршните прашања -->
-                            {% for answer_key, answer_value in answers.items %}
-                                {% if answer_key == q.id %}
-                                    <p><em>Одговор:</em>
-                                        <span class="badge
-                                            {% if answer_value == 'ДА' %}bg-success
-                                            {% elif answer_value == 'НЕ' %}bg-danger
-                                            {% else %}bg-info{% endif %}">
-                                            {{ answer_value }}
-                                        </span>
-                                    </p>
-                                {% endif %}
-                            {% endfor %}
-
-                            <!-- Прикажи текст за завршните прашања ако постои -->
-                            {% with text_key=q.id|stringformat:"s"|add:"_text" %}
+                                <!-- Прикажи го одговорот за завршните прашања -->
                                 {% for answer_key, answer_value in answers.items %}
-                                    {% if answer_key == text_key %}
-                                        <div class="p-2 bg-light rounded">
-                                            <small class="text-muted fw-bold">Објаснување:</small>
-                                            <p>{{ answer_value }}</p>
-                                        </div>
+                                    {% if answer_key == q.id %}
+                                        <p><em>Одговор:</em>
+                                            <span class="badge
+                                            {% if answer_value.answer == 'ДА' %}bg-success
+                                            {% elif answer_value.answer == 'НЕ' %}bg-danger
+                                            {% else %}bg-info{% endif %}">
+                                            {{ answer_value.answer }}
+                                        </span>
+
+                                        </p>
+                                        {% if answer_value.text %}
+                                         <div class="p-2 bg-light rounded">
+                                                <small class="text-muted fw-bold">Објаснување:</small>
+                                                <p>{{ answer_value.text }}</p>
+                                            </div>
+                                            {% endif %}
                                     {% endif %}
                                 {% endfor %}
-                            {% endwith %}
 
-                            <div class="mt-2">
-                                <label for="points_{{ q.id }}" class="form-label">Поени:</label>
-                                {% for points_key, points_value in therapist_points.items %}
-                                    {% if points_key == q.id %}
+                                <!-- Прикажи текст за завршните прашања ако постои -->
+{#                                {% with text_key=q.id|stringformat:"s"|add:"_text" %}#}
+{#                                    {% for answer_key, answer_value in answers.items %}#}
+{#                                        {% if answer_key == text_key %}#}
+{#                                            <div class="p-2 bg-light rounded">#}
+{#                                                <small class="text-muted fw-bold">Објаснување:</small>#}
+{#                                                <p>{{ answer_value }}</p>#}
+{#                                            </div>#}
+{#                                        {% endif %}#}
+{#                                    {% endfor %}#}
+{#                                {% endwith %}#}
+
+                                <div class="mt-2">
+                                    <label for="points_{{ q.id }}" class="form-label">Поени:</label>
+                                    {% for points_key, points_value in therapist_points.items %}
+                                        {% if points_key == q.id %}
+                                            <input type="number"
+                                                   name="points_{{ q.id }}"
+                                                   id="points_{{ q.id }}"
+                                                   class="form-control"
+                                                   min="0"
+                                                   max="10"
+                                                   value="{{ points_value }}">
+                                        {% endif %}
+                                    {% empty %}
                                         <input type="number"
                                                name="points_{{ q.id }}"
                                                id="points_{{ q.id }}"
                                                class="form-control"
                                                min="0"
                                                max="10"
-                                               value="{{ points_value }}">
-                                    {% endif %}
-                                {% empty %}
-                                    <input type="number"
-                                           name="points_{{ q.id }}"
-                                           id="points_{{ q.id }}"
-                                           class="form-control"
-                                           min="0"
-                                           max="10"
-                                           value="">
-                                {% endfor %}
+                                               value="">
+                                    {% endfor %}
+                                </div>
                             </div>
-                        </div>
-                    {% endfor %}
+                        {% endfor %}
+                    </div>
                 </div>
-            </div>
-        {% endif %}
+            {% endif %}
 
-        <div class="card mb-4">
-            <div class="card-header">
-                <h3>Коментари</h3>
-            </div>
-            <div class="card-body">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>Коментари</h3>
+                </div>
+                <div class="card-body">
                 <textarea name="comments" class="form-control" rows="4"
                           placeholder="Внесете ваши коментари...">{{ response.therapist_comments }}</textarea>
+                </div>
             </div>
-        </div>
 
-        <div class="text-end">
-            <button type="submit" class="btn btn-primary btn-lg">
-                Зачувај поени и коментари
-            </button>
-        </div>
-    </form>
-</div>
+            <div class="text-end">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    Зачувај поени и коментари
+                </button>
+            </div>
+        </form>
+    </div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-// Автоматско пресметување на вкупно поени
-function calculateTotal() {
-    let total = 0;
-    document.querySelectorAll('input[type="number"]').forEach(input => {
-        if (input.value) {
-            total += parseInt(input.value);
+    <script>
+        // Автоматско пресметување на вкупно поени
+        function calculateTotal() {
+            let total = 0;
+            document.querySelectorAll('input[type="number"]').forEach(input => {
+                if (input.value) {
+                    total += parseInt(input.value);
+                }
+            });
+            // Ако сакате да прикажете вкупно поени некаде, додадете елемент со id="total-display"
+            // document.getElementById('total-display').textContent = total;
         }
-    });
-    // Ако сакате да прикажете вкупно поени некаде, додадете елемент со id="total-display"
-    // document.getElementById('total-display').textContent = total;
-}
 
-document.querySelectorAll('input[type="number"]').forEach(input => {
-    input.addEventListener('input', calculateTotal);
-});
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('input', calculateTotal);
+        });
 
-calculateTotal(); // Пресметај на почеток
-</script>
+        calculateTotal(); // Пресметај на почеток
+    </script>
 {% endblock %}

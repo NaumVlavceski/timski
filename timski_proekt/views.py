@@ -32,7 +32,6 @@ def is_parent(user):
 
 # Главна страна
 def index(request):
-    # prasalnici = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 27, 33, 42, 48, 54, 60]
     return render(request, "index.html")
 
 # Прикажи прашалник
@@ -49,28 +48,44 @@ def prasalnici(request, mesec):
 
     # POST - зачувување на одговори
     elif request.method == "POST" and is_parent(request.user):
-        # Земи го детето (во овој пример, го зgiемаме првото дете)
         child = request.user.children.first()
         if not child:
             return redirect('add_child')
 
         # Собирање на одговорите
         answers = {}
+
         for key, value in request.POST.items():
-            if key != 'csrfmiddlewaretoken' and not key.endswith('_command') and not key.startswith('txt_'):
-                answers[key] = value
-            elif key.endswith('_command'):
-                # Зачувување на команди
-                q_id = key.replace('_command', '')
+
+            if key == "csrfmiddlewaretoken":
+                continue
+
+            # textarea
+            if key.startswith("txt_"):
+                q_id = key.replace("txt_", "")
+
                 if q_id not in answers:
                     answers[q_id] = {}
-                answers[q_id]['commands'] = request.POST.getlist(key)
-            elif key.startswith('txt_'):
-                # Текст одговори
-                q_id = key.replace('txt_', '')
+
+                answers[q_id]["text"] = value
+
+            # radio answers
+            elif not key.endswith("_command"):
+                q_id = key
+
                 if q_id not in answers:
                     answers[q_id] = {}
-                answers[q_id]['text'] = value
+
+                answers[q_id]["answer"] = value
+
+            # checkbox commands
+            elif key.endswith("_command"):
+                q_id = key.replace("_command", "")
+
+                if q_id not in answers:
+                    answers[q_id] = {}
+
+                answers[q_id]["commands"] = request.POST.getlist(key)
 
         # Создај ParentResponse
         response = ParentResponse.objects.create(
@@ -81,7 +96,7 @@ def prasalnici(request, mesec):
             notes=request.POST.get('notes', ''),
             status='submitted'
         )
-
+        print(answers)
         return redirect('parent_dashboard')
 
 
@@ -296,7 +311,7 @@ def response_detail(request, response_id):
 
     answers = response.get_answers()
     therapist_points = response.get_therapist_points()
-
+    print(answers)
     return render(request, 'response_detail.html', {
         'response': response,
         'quiz': quiz,
@@ -332,6 +347,7 @@ def export_response_pdf(request, response_id):
         'therapist_points': therapist_points,
         'user': request.user,
     })
+    print(answers)
 
     # Конфигурација за pdfkit - ПАТЕКАТА ДО wkhtmltopdf
     try:
